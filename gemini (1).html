@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เมนูอาหาร - เลอมง ราเมง แม่กลอง</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Azeret+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #F47C20;
+      --orange-light: #FFF3E8;
+      --orange-dark: #D96A10;
+      --gray-bg: #F5F5F5;
+      --white: #FFFFFF;
+      --text-dark: #1A1A1A;
+      --text-mid: #555;
+      --text-light: #999;
+      --border: #E8E8E8;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      --radius: 16px;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--gray-bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo img { height: 46px; width: auto; border-radius: 8px; }
+    .logo-text h1 { font-size: 18px; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
+    .logo-text p { font-size: 11px; color: var(--text-light); }
+
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
+    .btn-cart {
+      background: var(--orange);
+      border: none;
+      color: var(--white);
+      padding: 9px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.2s;
+    }
+    .btn-cart:hover { background: var(--orange-dark); }
+    .cart-badge {
+      background: var(--white);
+      color: var(--orange);
+      border-radius: 50px;
+      padding: 1px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* ── MAIN ── */
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 120px; }
+
+    .tabs {
+      display: flex; gap: 8px; margin-bottom: 22px;
+      overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 8px 18px; border-radius: 50px;
+      border: 1.5px solid var(--border);
+      background: var(--white); font-size: 14px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .tab.active { background: var(--orange); border-color: var(--orange); color: var(--white); }
+    .tab:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: var(--white); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--card-shadow); transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.11); }
+
+    .card-img {
+      width: 100%; aspect-ratio: 1/1;
+      background: #f0f0f0; overflow: hidden;
+    }
+    .card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.3s;
+    }
+    .card:hover .card-img img { transform: scale(1.04); }
+
+    .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+    .card-desc { font-size: 11px; color: var(--text-light); margin-bottom: 12px; flex-grow: 1; line-height: 1.5; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .card-price { font-size: 16px; font-weight: 700; color: var(--orange); }
+    .btn-add {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--orange); border: none; color: white;
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-add:hover { background: var(--orange-dark); }
+    .btn-add:active { transform: scale(0.9); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.55); display: none; align-items: center;
+      justify-content: center; z-index: 1000; padding: 20px;
+      backdrop-filter: blur(3px);
+    }
+    .modal-content {
+      background: var(--white); padding: 24px; border-radius: var(--radius);
+      max-width: 420px; width: 100%; position: relative;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+    /* ── CART ── */
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .cart-item-info { flex-grow: 1; }
+    .cart-item-name { font-size: 14px; font-weight: 600; }
+    .cart-item-price { font-size: 13px; color: var(--orange); font-weight: 700; margin-top: 2px; }
+    .qty-controls { display: flex; align-items: center; gap: 10px; margin-left: 15px; }
+    .btn-qty {
+      width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--border);
+      background: var(--white); cursor: pointer; font-weight: bold; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .btn-qty:hover { border-color: var(--orange); color: var(--orange); }
+    .qty-num { font-size: 14px; font-weight: 700; min-width: 22px; text-align: center; }
+
+    /* ── NOODLE OPTIONS ── */
+    .option-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;
+      border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .option-item:hover { border-color: var(--orange); background: var(--orange-light); }
+    .option-item input[type=radio] { accent-color: var(--orange); margin-right: 8px; }
+
+    /* ── BUTTONS ── */
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-confirm {
+      flex: 1; background: var(--orange); color: white; border: none;
+      padding: 13px; border-radius: 12px; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-confirm:hover { background: var(--orange-dark); }
+    .btn-confirm:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-cancel {
+      flex: 1; background: #f0f0f0; padding: 13px; border-radius: 12px;
+      border: none; cursor: pointer; font-weight: 600; font-size: 15px;
+      transition: background 0.2s;
+    }
+    .btn-cancel:hover { background: #e0e0e0; }
+
+    /* ── DIVIDER ── */
+    .divider { border-top: 1px dashed #ccc; margin: 14px 0; }
+    .total-row {
+      display: flex; justify-content: space-between;
+      font-weight: 700; font-size: 17px; margin-top: 10px;
+    }
+
+    /* ── RECEIPT MODAL ── */
+    #billModal { align-items: center; }
+    .receipt-wrapper {
+      background: var(--white);
+      width: 100%; max-width: 360px;
+      border-radius: var(--radius);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      overflow: hidden;
+      animation: slideUp 0.25s ease;
+    }
+    .receipt-topbar {
+      background: var(--orange);
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .receipt-topbar-title { color: white; font-weight: 700; font-size: 16px; }
+    .receipt-body {
+      padding: 20px 20px 0;
+      max-height: 70vh; overflow-y: auto;
+      font-family: 'Azeret Mono', monospace;
+      font-size: 13px; color: #2a2a2a;
+    }
+    .receipt-header { text-align: center; margin-bottom: 16px; }
+    .receipt-logo { width: 72px; border-radius: 8px; margin-bottom: 8px; }
+    .receipt-shop-name { font-weight: 700; font-size: 15px; font-family: 'Sarabun'; }
+    .receipt-sub { font-size: 12px; color: #666; margin-top: 2px; }
+    .receipt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .receipt-table th { text-align: left; color: #888; font-weight: 600; padding-bottom: 6px; font-size: 11px; text-transform: uppercase; }
+    .receipt-table td { padding: 7px 0; border-bottom: 1px solid #f0f0f0; }
+    .receipt-table td.right { text-align: right; white-space: nowrap; }
+    .receipt-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 700; font-size: 19px; padding: 12px 0 4px;
+    }
+    .receipt-total-row .amount { color: var(--orange); }
+    .receipt-footer-text {
+      text-align: center; color: #aaa; font-size: 11px;
+      padding: 10px 0 16px; font-family: 'Sarabun';
+    }
+
+    /* ── BLUETOOTH SECTION ── */
+    .bt-section {
+      padding: 16px 20px 20px;
+      background: #fafafa;
+      border-top: 1px solid var(--border);
+    }
+    .bt-status-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .bt-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #ccc; flex-shrink: 0; transition: background 0.3s;
+    }
+    .bt-dot.connected { background: var(--success); box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+    .bt-dot.connecting { background: #facc15; box-shadow: 0 0 0 3px rgba(250,204,21,0.2); animation: pulse 1s infinite; }
+    .bt-dot.error { background: var(--danger); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .bt-status-text { font-size: 13px; color: var(--text-mid); font-family: 'Sarabun'; flex-grow: 1; }
+    .btn-bt {
+      width: 100%; padding: 12px; border-radius: 12px; border: none;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 8px; transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-bt-connect {
+      background: #2563eb; color: white;
+    }
+    .btn-bt-connect:hover { background: #1d4ed8; }
+    .btn-bt-print {
+      background: var(--orange); color: white;
+    }
+    .btn-bt-print:hover { background: var(--orange-dark); }
+    .btn-bt-print:disabled, .btn-bt-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-bt-print:disabled:hover { background: var(--orange); }
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-receipt-close {
+      flex: 1; background: #f0f0f0; padding: 12px; border-radius: 12px;
+      border: none; cursor: pointer; font-weight: 600; font-size: 14px;
+    }
+    .btn-receipt-done {
+      flex: 1; background: var(--success); color: white; padding: 12px;
+      border-radius: 12px; border: none; cursor: pointer; font-weight: 700; font-size: 14px;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a1a1a; color: white; padding: 11px 22px; border-radius: 50px;
+      font-size: 14px; font-family: 'Sarabun'; opacity: 0;
+      transition: opacity 0.3s, bottom 0.3s; z-index: 3000; pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; bottom: 28px; }
+    .toast.success { background: #166534; }
+    .toast.error { background: #7f1d1d; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="https://lh3.googleusercontent.com/d/1vP4_iLidN6-qH59C0H09G9_SjO7W9M3Q" alt="Le Mong Logo">
+    <div class="logo-text">
+      <h1>เลอมง ราเมง</h1>
+      <p>สาขาแม่กลอง</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-cart" onclick="openCart()">
+      🛒 <span class="cart-badge" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" onclick="filterMenu('all', this)">🍴 ทั้งหมด</button>
+    <button class="tab" onclick="filterMenu('food', this)">🍜 ราเมง</button>
+    <button class="tab" onclick="filterMenu('drink', this)">☕ เครื่องดื่ม</button>
+    <button class="tab" onclick="filterMenu('snack', this)">🍡 ทานเล่น</button>
+  </div>
+  <div id="menuGrid" class="menu-grid"></div>
+</main>
+
+<!-- ── CART MODAL ── -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal-content">
+    <div class="modal-title">🛒 รายการในตะกร้า</div>
+    <div id="cartItemsList" style="max-height: 320px; overflow-y: auto;"></div>
+    <div class="divider"></div>
+    <div class="total-row" style="margin-bottom: 18px;">
+      <span>รวมทั้งหมด</span>
+      <span id="cartTotalLabel" style="color: var(--orange);">฿0</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeCart()">เลือกเพิ่ม</button>
+      <button class="btn-confirm" id="btnCheckout" onclick="showBill()">สั่งอาหาร →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOODLE MODAL ── -->
+<div class="modal-overlay" id="noodleModal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalFoodName">เลือกประเภทเส้น</div>
+    <div id="noodleOptions"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-confirm" onclick="confirmAddToCart()">✓ เพิ่มลงตะกร้า</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BILL / RECEIPT MODAL ── -->
+<div class="modal-overlay" id="billModal">
+  <div class="receipt-wrapper">
+
+    <div class="receipt-topbar">
+      <span class="receipt-topbar-title">🧾 ใบเสร็จรับเงิน</span>
+      <span style="color:rgba(255,255,255,0.7); font-size:12px;" id="receiptDate"></span>
+    </div>
+
+    <div class="receipt-body" id="receiptBody">
+      <div class="receipt-header">
+        <img src="https://lh3.googleusercontent.com/d/1vP4_iLidN6-qH59C0H09G9_SjO7W9M3Q" class="receipt-logo" alt="logo">
+        <div class="receipt-shop-name">LE MONG RAMEN</div>
+        <div class="receipt-sub">สาขาแม่กลอง · โทร 086-574-0064</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <table class="receipt-table">
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th class="right" style="text-align:right">ราคา</th>
+          </tr>
+        </thead>
+        <tbody id="billItems"></tbody>
+      </table>
+
+      <div class="divider"></div>
+
+      <div class="receipt-total-row">
+        <span>ยอดรวม</span>
+        <span class="amount" id="billTotal">฿0</span>
+      </div>
+
+      <div class="receipt-footer-text">ขอบคุณที่ใช้บริการ 🙏</div>
+    </div>
+
+    <!-- ── BLUETOOTH PRINT SECTION ── -->
+    <div class="bt-section">
+      <div class="bt-status-row">
+        <div class="bt-dot" id="btDot"></div>
+        <span class="bt-status-text" id="btStatusText">ยังไม่ได้เชื่อมต่อเครื่องพิมพ์</span>
+      </div>
+
+      <button class="btn-bt btn-bt-connect" id="btnConnect" onclick="connectBluetooth()">
+        📶 เชื่อมต่อเครื่องพิมพ์บลูทูธ
+      </button>
+      <button class="btn-bt btn-bt-print" id="btnPrint" onclick="printReceipt()" disabled>
+        🖨️ พิมพ์ใบเสร็จ
+      </button>
+
+      <div class="btn-row">
+        <button class="btn-receipt-close" onclick="closeBill()">← แก้ไข</button>
+        <button class="btn-receipt-done" onclick="location.reload()">✓ เสร็จสิ้น</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ──────────── MENU DATA ──────────── */
+  const menuItems = [
+    { id: 1,  name: "แดงโซดามะนาว",       desc: "โซดาสีแดงหวานอมเปรี้ยว ใส่มะนาว",          price: 35, cat: "drink", img: "red_soda.png" },
+    { id: 2,  name: "เขียวมะนาวโซดา",      desc: "โซดามะนาวสดชื่น เย็นชื่นใจ",               price: 35, cat: "drink", img: "green_soda.png" },
+    { id: 3,  name: "ชามะนาว",             desc: "ชาเย็นผสมมะนาวสด หอมชื่นใจ",               price: 35, cat: "drink", img: "lemon_tea.png" },
+    { id: 4,  name: "นมหมีปั่น",           desc: "นมหมีปั่นเย็น หวานมันครีมมี่",              price: 40, cat: "drink", img: "bear_milk.png" },
+    { id: 5,  name: "ไมโลปั่น",            desc: "ไมโลปั่นเย็น เข้มข้น หอมช็อกโกแลต",        price: 40, cat: "drink", img: "milo_frappe.png" },
+    { id: 6,  name: "ไมโลดิบน้ำแข็งใส",    desc: "น้ำแข็งใสราดไมโลดิบ หวานมัน",              price: 40, cat: "snack", img: "milo_ice.png" },
+    { id: 7,  name: "ไมโลเย็น",            desc: "ไมโลเย็นใส่นม หอมช็อกโกแลตเข้มข้น",        price: 45, cat: "drink", img: "milo_cold.png" },
+    { id: 8,  name: "เพียวมัจฉะอ่อน",      desc: "มัจฉะเกรดพรีเมียม รสอ่อน หอมกลิ่นมัจฉะ",  price: 60, cat: "drink", img: "matcha_light.png" },
+    { id: 9,  name: "เพียวมัจฉะเข้ม",      desc: "มัจฉะเกรดพรีเมี่ยม รสเข้มข้น",             price: 60, cat: "drink", img: "matcha_dark.png" },
+    { id: 10, name: "อเมริกาโน่",          desc: "กาแฟเกรดพรีเมี่ยมรสเข้มข้น นุ่มนวล",       price: 30, cat: "drink", img: "americano.png" },
+    { id: 11, name: "เอสเปรสโซ่",          desc: "กาแฟเกรดพรีเมี่ยม กลมกล่อมเข้มข้น",        price: 40, cat: "drink", img: "espresso.png" },
+    { id: 12, name: "น้ำชื่นใจ (อุทัยทิพย์)", desc: "น้ำชื่นใจ กินแล้วสดชื่น",               price: 15, cat: "drink", img: "water_utai.jpg" },
+    { id: 13, name: "อิบิโรลกุ้ง",         desc: "ปอเปี๊ยทอดสอดไส้กุ้ง กรอบถึงใจ",           price: 59, cat: "snack", img: "ebi_roll.jpg" },
+    { id: 14, name: "เกี๊ยวซ่าทอดกรอบ",    desc: "เกี๊ยวซ่าทอดกรอบ กรุบกรอบไม่อมน้ำมัน",    price: 59, cat: "snack", img: "gyoza_fried.jpg" },
+    { id: 15, name: "เกี๊ยวซ่าทอดน้ำ",     desc: "เกี๊ยวซ่าทอดน้ำ นุ่มชุ่มฉ่ำเต็มคำ",        price: 59, cat: "snack", img: "gyoza_water.jpg" },
+    { id: 16, name: "ราเมงซุปกระดูก",      desc: "ซุปกระดูกเข้มข้น หอมกลมกล่อม",             price: 59, cat: "food",  img: "ramen_bone.jpg" },
+    { id: 17, name: "ราเมงซุปโชยุ",        desc: "ซุปโชยุรสละเอียด หอมอ่อน ๆ",               price: 59, cat: "food",  img: "ramen_shoyu.jpg" },
+    { id: 18, name: "ราเมงซุปต้มยำ",       desc: "ซุปต้มยำรสจัด เผ็ดหอมสมุนไพร",             price: 59, cat: "food",  img: "ramen_tomyum.jpg" },
+    { id: 19, name: "ราเมงซุปหม่าล่า",     desc: "ซุปหม่าล่าเผ็ดชา กลมกล่อมเข้มข้น",         price: 59, cat: "food",  img: "ramen_mala.jpg" },
+    { id: 20, name: "ราเมงซุปมิโซะ",       desc: "ซุปมิโซะญี่ปุ่นแท้ หอมนุ่ม",               price: 59, cat: "food",  img: "ramen_miso.jpg" },
+    { id: 21, name: "ราเมงเย็น",           desc: "ราเมงเส้นเย็นเด้งดึ๋ง น้ำจิ้มรสพิเศษ",      price: 59, cat: "food",  img: "cold_ramen.jpg" },
+    { id: 22, name: "Cola",               desc: "ซ่า สดชื่น 👍🏻",                             price: 17, cat: "drink", img: "cola.jpg" },
+    { id: 23, name: "ชามะลิ",             desc: "เย็นสดชื่น หอมกลิ่นมะลิ",                    price: 15, cat: "drink", img: "jasmine_tea.png" },
+  ];
+
+  const noodleTypes = [
+    { name: "เส้นราเมงธรรมดา", price: 0 },
+    { name: "เส้นอุด้ง",        price: 11 },
+    { name: "เส้นโซเมง",       price: 11 },
+    { name: "เส้นโซบะ",        price: 11 }
+  ];
+
+  let cart = [];
+  let currentPendingItem = null;
+  let btCharacteristic = null;
+  let btDevice = null;
+
+  /* ──────────── RENDER ──────────── */
+  function renderCards(filter) {
+    const grid = document.getElementById('menuGrid');
+    const items = filter === 'all' ? menuItems : menuItems.filter(m => m.cat === filter);
+    grid.innerHTML = items.map(item => `
+      <div class="card">
+        <div class="card-img">
+          <img src="${item.img}" alt="${item.name}" onerror="this.src='https://placehold.co/300x300/f5f5f5/ccc?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="card-name">${item.name}</div>
+          <div class="card-desc">${item.desc}</div>
+          <div class="card-footer">
+            <span class="card-price">฿${item.price}</span>
+            <button class="btn-add" onclick="handleAddToCart(${item.id})">+</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ──────────── CART LOGIC ──────────── */
+  function handleAddToCart(itemId) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (item.cat === 'food') {
+      currentPendingItem = item;
+      document.getElementById('modalFoodName').textContent = `🍜 ${item.name} — เลือกเส้น`;
+      document.getElementById('noodleOptions').innerHTML = noodleTypes.map((n, i) => `
+        <label class="option-item">
+          <span><input type="radio" name="noodle" value="${i}" ${i===0?'checked':''}> ${n.name}</span>
+          <span style="color:var(--orange); font-weight:700">+฿${n.price}</span>
+        </label>
+      `).join('');
+      document.getElementById('noodleModal').style.display = 'flex';
+    } else {
+      addToCart(item.name, item.price);
+    }
+  }
+
+  function confirmAddToCart() {
+    const idx = document.querySelector('input[name="noodle"]:checked').value;
+    const noodle = noodleTypes[idx];
+    addToCart(`${currentPendingItem.name} (${noodle.name})`, currentPendingItem.price + noodle.price);
+    closeModal();
+  }
+
+  function addToCart(name, price) {
+    const existing = cart.find(i => i.name === name);
+    if (existing) { existing.qty++; } else { cart.push({ name, price, qty: 1 }); }
+    updateCartBadge();
+    showToast(`✓ เพิ่ม ${name}`, 'success');
+  }
+
+  function updateCartBadge() {
+    document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
+  }
+
+  function openCart() {
+    const list = document.getElementById('cartItemsList');
+    const totalLabel = document.getElementById('cartTotalLabel');
+    if (cart.length === 0) {
+      list.innerHTML = '<p style="text-align:center; color:#999; padding:24px 0;">ตะกร้าว่างเปล่า</p>';
+      totalLabel.textContent = '฿0';
+      document.getElementById('btnCheckout').disabled = true;
+    } else {
+      let total = 0;
+      list.innerHTML = cart.map((item, i) => {
+        total += item.price * item.qty;
+        return `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-price">฿${item.price} × ${item.qty} = ฿${item.price * item.qty}</div>
+            </div>
+            <div class="qty-controls">
+              <button class="btn-qty" onclick="changeQty(${i}, -1)">−</button>
+              <span class="qty-num">${item.qty}</span>
+              <button class="btn-qty" onclick="changeQty(${i}, 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+      totalLabel.textContent = `฿${total}`;
+      document.getElementById('btnCheckout').disabled = false;
+    }
+    document.getElementById('cartModal').style.display = 'flex';
+  }
+
+  function changeQty(index, delta) {
+    cart[index].qty += delta;
+    if (cart[index].qty <= 0) cart.splice(index, 1);
+    updateCartBadge();
+    openCart();
+  }
+
+  /* ──────────── BILL ──────────── */
+  function showBill() {
+    closeCart();
+    let total = 0;
+    document.getElementById('billItems').innerHTML = cart.map(item => {
+      const line = item.price * item.qty;
+      total += line;
+      return `<tr>
+        <td>${item.name}<br><span style="color:#aaa;font-size:11px">฿${item.price} × ${item.qty}</span></td>
+        <td class="right" style="font-weight:700">฿${line}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('billTotal').textContent = `฿${total}`;
+    document.getElementById('receiptDate').textContent = new Date().toLocaleString('th-TH', { dateStyle:'short', timeStyle:'short' });
+    document.getElementById('billModal').style.display = 'flex';
+  }
+
+  /* ──────────── BLUETOOTH PRINT ──────────── */
+  async function connectBluetooth() {
+    if (!navigator.bluetooth) {
+      showToast('❌ เบราว์เซอร์นี้ไม่รองรับ Bluetooth (ใช้ Chrome)', 'error');
+      return;
+    }
+    setBtStatus('connecting', 'กำลังค้นหาเครื่องพิมพ์...');
+    document.getElementById('btnConnect').disabled = true;
+
+    // ── JK-5802H UUID (hardcoded) ──
+    const JK5802H_SERVICE        = '000018f0-0000-1000-8000-00805f9b34fb';
+    const JK5802H_CHARACTERISTIC = '00002af1-0000-1000-8000-00805f9b34fb';
+
+    try {
+      btDevice = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [ JK5802H_SERVICE ]
+      });
+
+      setBtStatus('connecting', `เชื่อมต่อ ${btDevice.name || 'JK-5802H'}...`);
+      const server = await btDevice.gatt.connect();
+
+      const service = await server.getPrimaryService(JK5802H_SERVICE);
+      btCharacteristic = await service.getCharacteristic(JK5802H_CHARACTERISTIC);
+
+      if (!btCharacteristic) throw new Error('ไม่พบ characteristic สำหรับการพิมพ์');
+
+      setBtStatus('connected', `เชื่อมต่อ: ${btDevice.name || 'เครื่องพิมพ์'} ✓`);
+      document.getElementById('btnConnect').textContent = '🔄 เปลี่ยนเครื่องพิมพ์';
+      document.getElementById('btnPrint').disabled = false;
+      document.getElementById('btnConnect').disabled = false;
+      showToast('✓ เชื่อมต่อเครื่องพิมพ์สำเร็จ', 'success');
+
+      btDevice.addEventListener('gattserverdisconnected', () => {
+        setBtStatus('error', 'เครื่องพิมพ์หลุดการเชื่อมต่อ');
+        document.getElementById('btnPrint').disabled = true;
+        btCharacteristic = null;
+      });
+
+    } catch (err) {
+      console.error(err);
+      setBtStatus('error', 'เชื่อมต่อไม่สำเร็จ กรุณาลองใหม่');
+      document.getElementById('btnConnect').disabled = false;
+      showToast('❌ ' + (err.message || 'เชื่อมต่อไม่สำเร็จ'), 'error');
+    }
+  }
+
+  function setBtStatus(state, text) {
+    const dot = document.getElementById('btDot');
+    dot.className = 'bt-dot ' + state;
+    document.getElementById('btStatusText').textContent = text;
+  }
+
+  async function printReceipt() {
+    if (!btCharacteristic) { showToast('❌ ยังไม่ได้เชื่อมต่อเครื่องพิมพ์', 'error'); return; }
+
+    const btn = document.getElementById('btnPrint');
+    btn.disabled = true;
+    btn.textContent = '⏳ กำลังพิมพ์...';
+
+    try {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const dateStr = new Date().toLocaleString('th-TH', { dateStyle:'short', timeStyle:'short' });
+
+      // ESC/POS commands
+      const ESC = 0x1B, GS = 0x1D;
+      const INIT       = [ESC, 0x40];
+      const CENTER     = [ESC, 0x61, 0x01];
+      const LEFT       = [ESC, 0x61, 0x00];
+      const BOLD_ON    = [ESC, 0x45, 0x01];
+      const BOLD_OFF   = [ESC, 0x45, 0x00];
+      const SIZE_2X    = [GS,  0x21, 0x11];
+      const SIZE_NORM  = [GS,  0x21, 0x00];
+      const FEED_CUT   = [GS,  0x56, 0x41, 0x05];
+      const LF         = [0x0A];
+
+      function textBytes(str) {
+        return [...new TextEncoder().encode(str)];
+      }
+      function line(str = '') { return [...textBytes(str), ...LF]; }
+      function dashes(n = 32) { return line('-'.repeat(n)); }
+
+      const data = [
+        ...INIT,
+        ...CENTER,
+        ...SIZE_2X, ...BOLD_ON,
+        ...line('LE MONG RAMEN'),
+        ...SIZE_NORM, ...BOLD_OFF,
+        ...line('สาขาแม่กลอง'),
+        ...line('โทร 086-574-0064'),
+        ...line(dateStr),
+        ...dashes(),
+        ...LEFT, ...BOLD_ON,
+        ...line('รายการ                    ราคา'),
+        ...BOLD_OFF,
+        ...dashes(),
+        ...cart.flatMap(item => {
+          const lineTotal = `฿${item.price * item.qty}`;
+          const label = `${item.name} x${item.qty}`;
+          const spaces = Math.max(1, 32 - label.length - lineTotal.length);
+          return line(label + ' '.repeat(spaces) + lineTotal);
+        }),
+        ...dashes(),
+        ...BOLD_ON, ...SIZE_2X,
+        ...CENTER,
+        ...line(`TOTAL  ฿${total}`),
+        ...SIZE_NORM, ...BOLD_OFF,
+        ...LF,
+        ...line('ขอบคุณที่ใช้บริการ'),
+        ...line('Thank you!'),
+        ...LF, ...LF, ...LF,
+        ...FEED_CUT
+      ];
+
+      const bytes = new Uint8Array(data);
+      const CHUNK = 512;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        await btCharacteristic.writeValue(bytes.slice(i, i + CHUNK));
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      showToast('✓ พิมพ์ใบเสร็จสำเร็จ', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('❌ พิมพ์ไม่สำเร็จ: ' + err.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🖨️ พิมพ์ใบเสร็จ';
+  }
+
+  /* ──────────── UTILITIES ──────────── */
+  function closeCart()  { document.getElementById('cartModal').style.display = 'none'; }
+  function closeBill()  { document.getElementById('billModal').style.display = 'none'; }
+  function closeModal() { document.getElementById('noodleModal').style.display = 'none'; }
+
+  function filterMenu(cat, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderCards(cat);
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (type ? ' ' + type : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.style.display = 'none'; });
+  });
+
+  renderCards('all');
+</script>
+</body>
+</html>
